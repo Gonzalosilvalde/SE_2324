@@ -143,9 +143,11 @@ void (* const g_pfnVectors[])(void) =
 //!
 //! \return None.
 //*****************************************************************************
+#include <system_MKL46Z4.h>
 void Default_ResetHandler(void)
 {
   unsigned long *pulSrc, *pulDest;
+
 
   /* copy the data segment initializers from flash to SRAM */
   pulSrc = &_sidata;
@@ -224,4 +226,3 @@ static void DefaultIntHandler(void)
 {
   for(;;);
 }
-
