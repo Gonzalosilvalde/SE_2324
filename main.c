@@ -1,54 +1,39 @@
 #include "MKL46Z4.h"
+#include "lcd.h"
+#include "division_asm.h"
 
-// LED (RG)
-// LED_GREEN = PTD5
-// LED_RED = PTE29
 
-void delay(void)
+//funciones
+void irclk_ini()
 {
-  volatile int i;
-
-  for (i = 0; i < 1000000; i++);
+    MCG->C1 = MCG_C1_IRCLKEN(1) | MCG_C1_IREFSTEN(1);
+    MCG->C2 = MCG_C2_IRCS(0); //0 32KHZ internal reference clock; 1= 4MHz irc
 }
 
-// LED_GREEN = PTD5
-void led_green_init()
-{
-  SIM->COPC = 0;
-  SIM->SCGC5 |= SIM_SCGC5_PORTD_MASK;
-  PORTD->PCR[5] = PORT_PCR_MUX(1);
-  GPIOD->PDDR |= (1 << 5);
-  GPIOD->PSOR = (1 << 5);
-}
 
-void led_green_toggle()
-{
-  GPIOD->PTOR = (1 << 5);
-}
 
-// LED_RED = PTE29
-void led_red_init()
-{
-  SIM->COPC = 0;
-  SIM->SCGC5 |= SIM_SCGC5_PORTE_MASK;
-  PORTE->PCR[29] = PORT_PCR_MUX(1);
-  GPIOE->PDDR |= (1 << 29);
-  GPIOE->PSOR = (1 << 29);
-}
 
-void led_red_toggle(void)
-{
-  GPIOE->PTOR = (1 << 29);
-}
+
 
 int main(void)
 {
-  led_green_init();
+    //led_init();
+    //sw_init();
+    irclk_ini(); // Enable internal ref clk to use by LCD
 
-  while (1) {
-    led_green_toggle();
-    delay();
-  }
+    lcd_ini();
+    //lcd_display_time(00, 00);
 
-  return 0;
+    //secuencia();
+    
+    while (1) {
+            LCD->AR |= LCD_AR_BLINK(1);
+            LCD->AR |= LCD_AR_BRATE(0xBB);
+            //lcd_display_dec(division_asm(2000,10));
+            lcd_display_dec(6565);
+
+        
+    }
+
+    return 0;
 }
