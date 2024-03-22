@@ -17,14 +17,9 @@ void irclk_ini()
 
 int main(void)
 {
-    //led_init();
-    //sw_init();
     irclk_ini(); // Enable internal ref clk to use by LCD
 
     lcd_ini();
-    //lcd_display_time(00, 00);
-
-    //secuencia();
     
     while (1) {
             LCD->AR |= LCD_AR_BLINK(1);
