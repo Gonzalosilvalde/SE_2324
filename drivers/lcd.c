@@ -322,28 +322,28 @@ void lcd_set(uint8_t value, uint8_t digit)
 }
 
 int division(int dividendo, int divisor) {
-    int ratio = 0;
+    int contador = 0;
 
     asm(
         "mov r0, %1\n"        // Mover dividendo a r0
         "mov r1, %2\n"        // Mover divisor a r1
-        "mov r2, #0\n"        // Inicializar ratio a 0
+        "mov r2, #0\n"        // Inicializar contador a 0
 
         "loop:\n"
         "cmp r0, r1\n"        // Comparar dividendo con divisor
         "blt end\n"           // Si dividendo < divisor, salir del bucle
         "sub r0, r0, r1\n"    // Restar divisor de dividendo
-        "add r2, r2, #1\n"    // Incrementar ratio
+        "add r2, r2, #1\n"    // Incrementar el contador
         "b loop\n"            // Volver al inicio del bucle
 
         "end:\n"
-        "mov %0, r2\n"        // Mover ratio al resultado
-        : "=r" (ratio)        // Salida: ratio
+        "mov %0, r2\n"        // Mover contador al resultado
+        : "=r" (contador)        // Salida: contador
         : "r" (dividendo), "r" (divisor)  // Entrada: dividendo y divisor
         : "r0", "r1", "r2"    // Registros que son modificados
     );
 
-    return ratio;
+    return contador;
 }
 //
 // Displays a 4 Digit number in decimal
