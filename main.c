@@ -24,7 +24,6 @@ int main(void)
     while (1) {
             LCD->AR |= LCD_AR_BLINK(1);
             LCD->AR |= LCD_AR_BRATE(0xBB);
-            //lcd_display_dec(division_asm(2000,10));
             lcd_display_dec(6565);
 
         
