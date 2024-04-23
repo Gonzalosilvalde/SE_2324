@@ -40,7 +40,6 @@ void turnOnRedLed()
 }
 
 QueueHandle_t queueHandle;
-//static int counter = 0;
 static int productores = 0;
 static int consumidores = 0;
 static int prod_plus_com = 0;
@@ -212,11 +211,6 @@ void taskLCD(void *pvParameters)
 
     }
 }
-
-
-
-
-
 
 
 
