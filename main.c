@@ -73,21 +73,22 @@ typedef enum {
 } BinaryValue;
 
 BinaryValue bin_var = BIN_11;//Como variable global funciona mejor
+
 void controlar_LEDs() {
-  switch (bin_var) {
-    case BIN_00:
-    case BIN_01:
-    case BIN_10:
-      LED_GREEN_OFFF();
-      LED_RED_ONN();
-      break;
-    case BIN_11:
-      LED_GREEN_ONN();
-      LED_RED_OFFF();
-      break;
-    default:
-      break;
-  }
+	switch (bin_var) {
+		case BIN_00:
+		case BIN_01:
+		case BIN_10:
+		LED_GREEN_OFFF();
+		LED_RED_ONN();
+		break;
+		case BIN_11:
+		LED_GREEN_ONN();
+		LED_RED_OFFF();
+		break;
+		default:
+		break;
+	}
 }
 
 // Funcion para inicializar LEDs modificada para iniciarlos a la vez
@@ -151,6 +152,7 @@ void init_all(void){
 
 
 
+// Función para cambiar solo el segundo bit (bit 1) del valor de BinaryValue
 BinaryValue cambiarSegundoBit(BinaryValue valor) {
     return valor ^ 0b10; // XOR con 0b10 para cambiar solo el segundo bit
 }
@@ -192,101 +194,139 @@ void PORTC_PORTD_IRQHandler(void) {
 }
 
 
+//redefino esta variable de lcd.c dentro de este archivo
+const static uint8_t LCD_Frontplane_Pin[LCD_NUM_FRONTPLANE_PINS] = {
+  LCD_FRONTPLANE0, LCD_FRONTPLANE1, LCD_FRONTPLANE2, LCD_FRONTPLANE3,
+  LCD_FRONTPLANE4, LCD_FRONTPLANE5, LCD_FRONTPLANE6, LCD_FRONTPLANE7
+};
 
+
+//creo una funcion para poder mostrar tambien negativos
+void lcd_display_nec(int16_t value) {
+    if (value > 9999 || value < -999) {
+        // Display "Err" if value is greater than 4 digits
+        lcd_display_error(0x10);
+        return;
+    }
+    
+    int16_t abs_value = value < 0 ? -value : value;//si es negativo lo paso a positivo
+
+    if (value < 0) {
+        LCD->WF8B[LCD_Frontplane_Pin[0]] = LCD_SEG_G;
+        LCD->WF8B[LCD_Frontplane_Pin[1]] = LCD_CLEAR;
+        abs_value = -value;
+    } else {
+        lcd_set(abs_value / 1000, 1);
+    }
+
+
+    // Display digits
+    lcd_set((abs_value / 100) % 10, 2);
+    lcd_set((abs_value / 10) % 10, 3);
+    lcd_set(abs_value % 10, 4);
+}
 /*!
  * @brief Main function
  */
 
 int main(void)
 {
-  char ch;
-  char palabra[MAX_LENGTH];
-  int index = 0;
-  /* Init board hardware. */
-  init_all();
+	char ch;
+	char palabra[MAX_LENGTH];
+	int index = 0;
+	/* Init board hardware. */
+	init_all();
 
 
-  while (1)
-    {
-      PRINTF("$ ");
-      while ((ch = GETCHAR()) != '\r' && index < MAX_LENGTH - 1) {
-            if (ch == '\b') {
-                PRINTF("\b \b");
-                if (index > 0) {
-                    index--;
-                }
-            } else {
-                PUTCHAR(ch);
-                palabra[index++] = ch;
-            }
-      }
-      palabra[index] = '\0';
-      index = 0;
-      PRINTF("\r\n");
-      if (!strcmp(palabra, "unlock1")) 
-      {
-        if (bin_var == BIN_11 || bin_var == BIN_01) {
-            //abre la puerta 1
-            PRINTF("Abriendo puerta 1\r\n");
-            bin_var = cambiarPrimerBit(bin_var);
-            controlar_LEDs();
-        }else{
-          PRINTF("Ya esta abierta la puerta 1\r\n");
-        }
-      }else if (!strcmp(palabra, "unlock2")) 
-        {//abre la puerta 2
-        if (bin_var == BIN_11 || bin_var == BIN_10) {
-            PRINTF("Abriendo puerta 2\r\n");
-            bin_var = cambiarSegundoBit(bin_var);
-            controlar_LEDs();
-        }else{
-          PRINTF("Ya esta abierta la puerta 2\r\n");
-        }
-      }else if (!strcmp(palabra, "lock1")) 
-        {//cierra la puerta 1
-        if (bin_var == BIN_10 || bin_var == BIN_00) {
-            PRINTF("Cerrando puerta 1\r\n");
-            bin_var = cambiarPrimerBit(bin_var);
-            controlar_LEDs();
-        }else{
-          PRINTF("Ya esta cerrada la puerta 1\r\n");
-        }
-      }else if (!strcmp(palabra, "lock2")) 
-        {//cierra la puerta 2
-        if (bin_var == BIN_01 || bin_var == BIN_00) {
-            PRINTF("Cerrando puerta 2\r\n");
-            bin_var = cambiarSegundoBit(bin_var);
-            controlar_LEDs();
-        }else{
-          PRINTF("Ya esta cerrada la puerta 2\r\n");
-        }
-      }else {//imprimir numero ingresado
-            const char *iniptr = palabra;
-            char *endptr;
-            int val = 0;
+	while (1)
+		{
+		PRINTF("$ ");
+		while ((ch = GETCHAR()) != '\r' && index < MAX_LENGTH - 1) {
+				if (ch == '\b') {
+					PRINTF("\b \b");
+					if (index > 0) {
+						index--;
+					}
+				} else {
+					PUTCHAR(ch);
+					palabra[index++] = ch;
+				}
+		}
+		palabra[index] = '\0';
+		index = 0;
+		PRINTF("\r\n");
+		if (!strcmp(palabra, "unlock1")) 
+		{
+			if (bin_var == BIN_11 || bin_var == BIN_01) {
+				//abre la puerta 1
+				PRINTF("Abriendo puerta 1\r\n");
+				bin_var = cambiarPrimerBit(bin_var);
+				controlar_LEDs();
+			}else{
+				PRINTF("Ya esta abierta la puerta 1\r\n");
+			}
+		}else if (!strcmp(palabra, "unlock2")) 
+			{//abre la puerta 2
+			if (bin_var == BIN_11 || bin_var == BIN_10) {
+				PRINTF("Abriendo puerta 2\r\n");
+				bin_var = cambiarSegundoBit(bin_var);
+				controlar_LEDs();
+			}else{
+				PRINTF("Ya esta abierta la puerta 2\r\n");
+			}
+		}else if (!strcmp(palabra, "lock1")) 
+			{//cierra la puerta 1
+			if (bin_var == BIN_10 || bin_var == BIN_00) {
+				PRINTF("Cerrando puerta 1\r\n");
+				bin_var = cambiarPrimerBit(bin_var);
+				controlar_LEDs();
+			}else{
+				PRINTF("Ya esta cerrada la puerta 1\r\n");
+			}
+		}else if (!strcmp(palabra, "lock2")) 
+			{//cierra la puerta 2
+			if (bin_var == BIN_01 || bin_var == BIN_00) 
+			{
+				PRINTF("Cerrando puerta 2\r\n");
+				bin_var = cambiarSegundoBit(bin_var);
+				controlar_LEDs();
+			}else
+			{
+				PRINTF("Ya esta cerrada la puerta 2\r\n");
+			}
+		}else 
+		{//imprimir numero ingresado
+			const char *iniptr = palabra;
+			char *endptr;
+			int val = 0;
 
-            val = strtol(iniptr, &endptr, 10);
-            if (iniptr == endptr) {
-              PRINTF("Error: Comando no reconocido\r\n");
-              lcd_display_error(0x01);
-              
-            }else{
-              if (val < 0 || val > 9999){
-                PRINTF("Error: Valor fuera de rango\r\n");
-                lcd_display_error(0x01);
-                
-              }else{
-                PRINTF("Valor ingresado: %d\r\n", val);
-                lcd_display_dec(val);
+			val = strtol(iniptr, &endptr, 10);
+			if (iniptr == endptr) 
+			{
+				PRINTF("Error: Comando no reconocido\r\n");
+				lcd_display_error(0x01);
+				
+			}else
+			{
+				if(val>=-999 && val <0)
+				{
+					PRINTF("Valor ingresado: -%d\r\n", val);
+					lcd_display_nec(val);
+				}
+				else if (val < -999 || val > 9999)
+				{
+					PRINTF("Error: Valor fuera de rango\r\n");
+					lcd_display_error(0x01);
+					
+				} 
+				else
+				{
+					PRINTF("Valor ingresado: %d\r\n", val);
+					lcd_display_dec(val);
 
-              }
-              
-            }
-            
-
-
-            
-            
-        }
-    }
+				}
+			
+			}       
+		}
+	}
 }
