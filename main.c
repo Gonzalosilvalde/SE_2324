@@ -38,6 +38,7 @@
 
 #include "pin_mux.h"
 #include "MKL46Z4.h"
+#include "lcd.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -125,11 +126,20 @@ void sw_init() {
 
 }
 
+void irclk_ini() 
+{
+    MCG->C1 = MCG_C1_IRCLKEN(1) | MCG_C1_IREFSTEN(1);
+    MCG->C2 = MCG_C2_IRCS(0); //0 32KHZ internal reference clock; 1= 4MHz irc
+}
+
+
 void init_all(void){
     /* Init board hardware. */
     
     led_init();
     sw_init();
+    irclk_ini();
+    lcd_ini();
 
     BOARD_InitPins();
     BOARD_BootClockRUN();
@@ -250,8 +260,33 @@ int main(void)
         }else{
           PRINTF("Ya esta cerrada la puerta 2\r\n");
         }
-      }else {
-          PRINTF("ERROR\r\n");
-      }
+      }else {//imprimir numero ingresado
+            const char *iniptr = palabra;
+            char *endptr;
+            int val = 0;
+
+            val = strtol(iniptr, &endptr, 10);
+            if (iniptr == endptr) {
+              PRINTF("Error: Comando no reconocido\r\n");
+              lcd_display_error(0x01);
+              
+            }else{
+              if (val < 0 || val > 9999){
+                PRINTF("Error: Valor fuera de rango\r\n");
+                lcd_display_error(0x01);
+                
+              }else{
+                PRINTF("Valor ingresado: %d\r\n", val);
+                lcd_display_dec(val);
+
+              }
+              
+            }
+            
+
+
+            
+            
+        }
     }
 }
