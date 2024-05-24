@@ -46,6 +46,7 @@
 #define LED_GREEN_PIN 5
 #define LED_RED_PIN 29
 
+#define MAX_LENGTH 100
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
@@ -154,17 +155,26 @@ void PORTC_PORTD_IRQHandler(void) {
     
     if (SW2_PRESSED()) {
         PORTC->PCR[SW1_PIN] |= PORT_PCR_ISF_MASK;
-        
+        if (bin_var == BIN_11 || bin_var == BIN_01) {
+            //abre la puerta 1
+            PRINTF("Abriendo puerta 1\r\n$ ");
+           
+        }if (bin_var == BIN_10 || bin_var == BIN_00) {
+            PRINTF("Cerrando puerta 1\r\n$ ");
+            
+        }
         bin_var= cambiarPrimerBit(bin_var);
         while (SW1_PRESSED()); // Espera hasta que se libere el botón
 
     }
     if (SW1_PRESSED()) {
         PORTC->PCR[SW2_PIN] |= PORT_PCR_ISF_MASK;
+        if (bin_var == BIN_11 || bin_var == BIN_10) {
+            PRINTF("Abriendo puerta 2\r\n$ ");
+        }if (bin_var == BIN_01 || bin_var == BIN_00) {
+            PRINTF("Cerrando puerta 2\r\n$ ");
+        }
         bin_var=cambiarSegundoBit(bin_var);
-        
-        PRINTF("bin_var: %d\r\n", bin_var);
-
         while (SW2_PRESSED()); // Espera hasta que se libere el botón
     }
     controlar_LEDs();
@@ -179,14 +189,69 @@ void PORTC_PORTD_IRQHandler(void) {
 
 int main(void)
 {
-  //char ch;
-
+  char ch;
+  char palabra[MAX_LENGTH];
+  int index = 0;
   /* Init board hardware. */
   init_all();
 
 
   while (1)
     {
-
+      PRINTF("$ ");
+      while ((ch = GETCHAR()) != '\r' && index < MAX_LENGTH - 1) {
+            if (ch == '\b') {
+                PRINTF("\b \b");
+                if (index > 0) {
+                    index--;
+                }
+            } else {
+                PUTCHAR(ch);
+                palabra[index++] = ch;
+            }
+      }
+      palabra[index] = '\0';
+      index = 0;
+      PRINTF("\r\n");
+      if (!strcmp(palabra, "unlock1")) 
+      {
+        if (bin_var == BIN_11 || bin_var == BIN_01) {
+            //abre la puerta 1
+            PRINTF("Abriendo puerta 1\r\n");
+            bin_var = cambiarPrimerBit(bin_var);
+            controlar_LEDs();
+        }else{
+          PRINTF("Ya esta abierta la puerta 1\r\n");
+        }
+      }else if (!strcmp(palabra, "unlock2")) 
+        {//abre la puerta 2
+        if (bin_var == BIN_11 || bin_var == BIN_10) {
+            PRINTF("Abriendo puerta 2\r\n");
+            bin_var = cambiarSegundoBit(bin_var);
+            controlar_LEDs();
+        }else{
+          PRINTF("Ya esta abierta la puerta 2\r\n");
+        }
+      }else if (!strcmp(palabra, "lock1")) 
+        {//cierra la puerta 1
+        if (bin_var == BIN_10 || bin_var == BIN_00) {
+            PRINTF("Cerrando puerta 1\r\n");
+            bin_var = cambiarPrimerBit(bin_var);
+            controlar_LEDs();
+        }else{
+          PRINTF("Ya esta cerrada la puerta 1\r\n");
+        }
+      }else if (!strcmp(palabra, "lock2")) 
+        {//cierra la puerta 2
+        if (bin_var == BIN_01 || bin_var == BIN_00) {
+            PRINTF("Cerrando puerta 2\r\n");
+            bin_var = cambiarSegundoBit(bin_var);
+            controlar_LEDs();
+        }else{
+          PRINTF("Ya esta cerrada la puerta 2\r\n");
+        }
+      }else {
+          PRINTF("ERROR\r\n");
+      }
     }
 }
