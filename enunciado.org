@@ -1,0 +1,115 @@
+* Sistemas Embebidos: Exame 1a oportunidade curso 23/24 - 2do cuadrimestre
+
+*LER CON ATENCIÓN*
+
+Unha parte importante do exame consistirá no desenvolvemento dunha
+simple *CLI* (/Command Line Interface/, isto é, unha liña de comandos)
+para interaccionar coa vosa placa FRDM-KL46Z mediante, neste caso, a
+interface de depuración: comunicación serie coa SDA da placa a través
+do porto USB empregando o driver UART da SDK.
+
+Partiredes deste repositorio git, que debedes clonar:
+[[https://gitlab.citic.udc.es/emilio.padron/se2324_1opq2]]
+
+Cando compiledes ese código (o Makefile para facelo é cousa vosa
+tamén) disporedes da comunicación serie a través de USB mediante a
+interface de depuración xa comentada (podedes ver as funcións e macros
+que ofrece esta interface, e que teredes que empregar a partir do
+terceiro exercicio, en /utilities/fsl_debug_console.h/).
+
+Podedes usar [[https://en.wikipedia.org/wiki/Minicom][minicom]] ou calquera outro software de comunicación serie
+para probar o voso código. Tedes un exemplo do seu uso xunto a esta
+tarefa do exame, ademais dun binario funcional que manda a cadea
+'hello world' se queredes probar a comunicación serie coa vosa placa.
+
+Para desenvolver este proxecto podedes engadir todos os arquivos a
+maiores que precisedes, ademais de modificar todo o que sexa necesario
+o arquivo /main.c/. O resto de arquivos xa existentes no repositorio non
+vos está permitido cambialos, nin movelos, nin sobreescribilos con
+outros (agás unha moi boa xustificación).
+
+*ENTREGABLE*: o mesmo repositorio git do que partides, cos vosos
+commits por riba do previamente existente (que non vos está permitido
+modificar). Podedes subir o repositorio (privado) a algún sitio en
+liña (gitlab/github/etc.) e pasarme a ligazón (e unha invitación) ou
+subir un tarball/zip con todo (pero debe estar o repositorio, isto é,
+o directorio .git). É obrigatorio que fagades varios commits, non me
+vale un commit «gordo» con todo o voso traballo. Ide facendo commits
+segundo ides progresando, aínda que non haxa un estado funcional do
+código. Non incluades arquivos binarios nos commits.
+
+  + *1 punto do exame* Makefile que permita xerar un binario
+    funcional, coa comunicación serie requerida, e «flashealo» na
+    placa cun simple «make flash».
+
+    Cando o binario se está executando na placa, unha conexión polo
+    porto serie debería proporcionar esta mensaxe cada vez que se fai
+    RESET:
+
+      Plantilla exame Sistemas Embebidos: 1a oportunidade 23/24 Q2
+
+  + *3 puntos do exame* Implementación dun autómata simple que simule
+    un sistema de seguridade con dúas portas. O sistema permite abrir
+    cada unha das portas, alertando mediante os LEDs se o habitáculo
+    está asegurado (ambas portas ben pechadas) ou non.
+
+    - O sistema fará uso dos dous botóns da placa, xestionados
+      mediante *interrupcións*:
+
+      + SW1 (pin 3 do porto C) permite abrir/pechar a porta 1. Cando
+        se pulsa, abre a porte se estaba pechada, e péchaa se estaba
+        aberta.
+
+      + SW2 (pin 12 do porto C) fai o mesmo coa porta 2.
+
+    - A saída do sistema indicará o estado das portas deste xeito:
+      + SAFE: sinal LED verde (porto D, bit 5) ACENDIDO, o que indica
+        que ambas portas están ben pechadas (habitáculo seguro). En
+        caso contrario, APAGADO.
+      + UNSAFE: sinal LED vermello (porto E, bit 29) ACENDIDO, cando
+        unha (ou ambas) portas están abertas. En caso contrario (as
+        dúas portas están ben pechadas), APAGADO.
+
+    As dúas portas están inicialmente pechadas. Só unha dos LEDs
+    debería estar acendido nun momento dado.
+
+  + *3 puntos do exame* Interface CLI básica (é dicir, eco por
+    pantalla co carácter asociado a cada tecla que se preme no
+    teclado, e salto de liña co RETURN para completar o comando),
+    mostrando como /prompt/ visual o _símbolo '$' seguido dun espazo_.
+
+    A interface permite introducir, tras o /prompt/, estes comandos
+    (case sensitive), como mecanismo alternativo para o control do
+    mesmo sistema de portas implementado no apartado anterior:
+    - unlock1: este comando abre a porta 1, se está pechada. Se a
+      porta xa estaba aberta, tamén nolo fai saber como resposta pola
+      terminal.
+    - unlock2: fai o propio coa porta 2, se estaba pechada ábrea, e se
+      xa estaba aberta nolo indica.
+    - lock1: pecha a porta 1, se estaba aberta. Se xa estaba pechada,
+      nolo di.
+    - lock2: ídem para a porta 1.
+
+    Todas os comandos proporcionan por pantalla información sobre o
+    estado no que quedan as dúas portas. Por suposto, os LEDs deben
+    actualizarse de xeito coherente (ver apartado anterior). Se usamos
+    os botóns da interface do apartado anterior, tamén sairán estas
+    mensaxes pola terminal.
+
+    Se introducimos calquera outra cousa na entrada, o sistema diranos
+    que é un comando incorrecto.
+
+    Para construír esta CLI, fíxate no código inicial de /main.c/, que
+    xa facía unha parte do que é requerido (capturar un carácter e
+    facer o eco por pantalla).
+
+  + *1.5 puntos do exame* Engadimos na nosa CLI a opción de introducir
+    un número de ata catro cifras, que será mostrado por pantalla, e
+    no LCD da placa, unha vez fagarmos RETURN. Se o número ten máis
+    cifras mostraremos unha mensaxe de erro, tanto en LCD como en
+    terminal.
+
+  + *1.5 puntos do exame* Extensión sobre o anterior: a nosa CLI agora
+    permite traballar con números negativos, mostrando no LCD (e pola
+    terminal) números negativo maiores que -999, e un erro en caso de
+    ser menor.
